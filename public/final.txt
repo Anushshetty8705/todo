@@ -1,0 +1,90 @@
+import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import './index.css';
+
+function App() {
+  const [todo, setTodo] = useState('');
+  const [todos, setTodos] = useState([]);
+  useEffect(() => {
+    if (localStorage.getItem("todos")) {
+
+      let todo = JSON.parse(localStorage.getItem("todos"))
+      setTodos(todo)
+    }
+  }, [])
+
+  const stl = (params) => {
+    localStorage.setItem("todos", JSON.stringify(todos))
+  }
+
+
+  function handleChange(e) {
+    setTodo(e.target.value);
+
+  }
+
+  function handleSave() {
+    if (todo.trim() !== "") {
+      setTodos([...todos, { todo, iscompleted: false, id: uuidv4() }]);
+      setTodo("");
+    }
+    stl()
+  }
+  function handleDelete(e, id) {
+    const newTodos = todos.filter(todo => todo.id !== id);
+    setTodos(newTodos);
+    stl()
+  }
+  function handleEdit(e, id) {
+    const toEdit = todos.find(todo => todo.id === id);
+    setTodo(toEdit.todo);
+    const newTodos = todos.filter(todo => todo.id !== id);
+    setTodos(newTodos);
+    stl()
+  }
+  function handlecheck(e, id) {
+    const comp = todos.find(todo => todo.id === id);
+    if (comp.iscompleted === false) {
+      comp.iscompleted = true
+    }
+    else {
+      comp.iscompleted = false
+    }
+    let newtodos = [...todos]
+    setTodos(newtodos)
+    stl()
+  }
+
+  return (
+    <>
+      <div className="navbar bg-green-600 w-full p-3 text-white font-extrabold text-stoke-black text-4xl sticky top-0">&lt;A<span className='text-black'>S/&gt;</span></div>
+      <div className="main bg-green-600 border-blue-50 w-4/5 mx-auto min-h-[80vh] rounded-xl my-3 overflow-auto">
+        <div className="text-white mx-10 font-bold text-2xl py-3">TODOS</div>
+        <div className="flex justify-items-end">
+          <input type="text" className="my-5 mx-10 w-2/3 rounded-md py-2" placeholder='     Enter the task' value= {todo} onChange={handleChange} />
+          <button className="text-white bg-green-700 px-2  rounded-md text-2xl  my-5 hover:bg-purple-900 cursor-grab" disabled={todo.length < 3} onClick={handleSave} >SAVE</button></div>
+          
+        <div className="text-white mx-10 font-bold text-2xl py-3">YOUR TODOS</div>
+        <div className="todos mx-10 text-white ">
+          {todos.length === 0 && <div className='text-xl'>no todos to display</div>}
+          {todos.map((item, index) => (
+            <div key={index}>
+              <div className='flex justify-around my-3'>
+                <input type="checkbox" onClick={(e) => { handlecheck(e, item.id) }} checked={item.iscompleted} />
+                <div className={item.iscompleted ? "line-through  w-2/3 flex text-2xl" : " w-2/3 flex text-2xl"}>{item.todo}</div>
+                <div className="flex gap-3 text-xl">
+                  <button className="text-white bg-green-700 px-2 py-1 rounded-md hover:bg-purple-900  cursor-grab" onClick={(e) => { handleEdit(e, item.id) }} >EDIT</button>
+                  <button className="text-white bg-green-700  px-2 py-1 rounded-md  cursor-grab hover:bg-purple-900" onClick={(e) => { handleDelete(e, item.id) }} >DELETE</button>
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+
+  );
+}
+
+export default App;
